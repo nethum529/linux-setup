@@ -40,7 +40,7 @@ install.sh                            # stow + udev rule + reload
 ## Install
 
 ```sh
-git clone https://github.com/<you>/linux-setup ~/linux-setup
+git clone https://github.com/nethum529/linux-setup ~/linux-setup
 cd ~/linux-setup
 ./install.sh
 ```
@@ -64,7 +64,7 @@ Full reasoning is commented inline in `home/.config/hypr/hyprland.conf`.
 
 ## Companion repos
 
-- **[tool-ring](https://github.com/<you>/tool-ring)** — the radial launcher ring
+- **[tool-ring](https://github.com/nethum529/tool-ring)** — the radial launcher ring
   bound to `Super+G`.
 
 ## Scripts

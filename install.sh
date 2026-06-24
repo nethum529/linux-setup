@@ -41,7 +41,7 @@ Done. Remaining manual steps:
                              btop, solaar, plus your GPU driver stack.
   - Reload Ambxst binds:     Super+Alt+B  (or restart the shell)
   - tool-ring (Super+G):     clone it and symlink the launcher, e.g.
-        git clone https://github.com/<you>/tool-ring ~/Projects/tool-ring
+        git clone https://github.com/nethum529/tool-ring ~/Projects/tool-ring
         ln -s ~/Projects/tool-ring/bin/tool-ring ~/.local/bin/tool-ring
 
 Note: hyprland.conf and ambxst/binds.json are tuned to a specific ASUS laptop
