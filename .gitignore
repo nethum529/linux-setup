@@ -1,0 +1,5 @@
+# stow conflict backups
+*.bak
+*~
+# never commit fish's variable store (machine state / may hold secrets)
+home/.config/fish/fish_variables

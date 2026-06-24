@@ -1,0 +1,3 @@
+# Stable colon-free DRM symlinks for Hyprland AQ_DRM_DEVICES (Aquamarine splits on ":")
+KERNEL=="card*", KERNELS=="0000:65:00.0", SYMLINK+="dri/amd-card"
+KERNEL=="card*", KERNELS=="0000:01:00.0", SYMLINK+="dri/nv-card"

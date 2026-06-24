@@ -1,0 +1,6 @@
+version = 4
+
+[windows.switch]
+modifier = "super"
+key = "e"
+switch_workspaces = true

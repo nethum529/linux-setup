@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# lidawake — toggle "close lid, stay awake".
+# ON  = hold a block inhibitor on handle-lid-switch so logind ignores the lid.
+# OFF = release it, normal suspend-on-lid-close returns.
+# No root needed; the lock lives in a transient --user unit named "lidawake".
+
+UNIT=lidawake
+
+is_on() { systemctl --user is-active --quiet "$UNIT"; }
+
+on() {
+	is_on && return 0
+	systemctl --user reset-failed "$UNIT" 2>/dev/null
+	systemd-run --user --quiet --unit="$UNIT" \
+		--description="keep awake on lid close" \
+		systemd-inhibit --what=handle-lid-switch --who=ambxst \
+		--why="keep awake on lid close" --mode=block \
+		sleep infinity
+}
+
+off() {
+	systemctl --user stop "$UNIT" 2>/dev/null
+	systemctl --user reset-failed "$UNIT" 2>/dev/null
+	return 0
+}
+
+case "$1" in
+on) on ;;
+off) off ;;
+toggle) if is_on; then off; else on; fi ;;
+status | "") is_on && echo on || echo off ;;
+*)
+	echo "usage: lidawake {on|off|toggle|status}" >&2
+	exit 2
+	;;
+esac

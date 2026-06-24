@@ -1,0 +1,220 @@
+#!/usr/bin/env python3
+"""A clean peaclock-style Pomodoro timer TUI. Zero dependencies.
+
+Big white seven-segment digits, a small status subtitle, runs inline.
+Controls: space start/stop, r reset, s skip, q quit.
+"""
+
+import os
+import sys
+import time
+import select
+import termios
+import tty
+import signal
+import struct
+import wave
+import tempfile
+import subprocess
+
+WORK = 25 * 60
+BREAK = 5 * 60
+
+# ANSI helpers
+ESC = "\x1b["
+RESET = ESC + "0m"
+WHITE = ESC + "38;5;252m"   # soft off-white, like peaclock
+DIM = ESC + "38;5;244m"     # muted grey for the subtitle/hint
+
+# Seven-segment block font, peaclock-style. Thick segments, big and chunky.
+SEGMENTS = {
+    "0": "abcdef", "1": "bc", "2": "abdeg", "3": "abcdg", "4": "bcfg",
+    "5": "acdfg", "6": "acdefg", "7": "abc", "8": "abcdefg", "9": "abcdfg",
+}
+
+# Glyph metrics. TV (vertical stroke, in cols) and TH (horizontal stroke, in
+# rows) differ on purpose: terminal cells are ~2x taller than wide, so 4 cols
+# and 2 rows render as the SAME visual stroke width -> uniform, square blocks.
+GW, GH, TV, TH = 16, 12, 4, 2
+
+
+def seg_glyph(segs):
+    """Render a digit as a chunky, aspect-corrected seven-segment block glyph."""
+    g = [[" "] * GW for _ in range(GH)]
+    mid = GH // 2
+
+    def hbar(r0):
+        for r in range(r0, r0 + TH):
+            for c in range(GW):  # full width -> flush with verticals, no notch
+                g[r][c] = "█"
+
+    def vbar(c0, r0, r1):
+        for r in range(r0, r1):
+            for c in range(c0, c0 + TV):
+                g[r][c] = "█"
+
+    if "a" in segs: hbar(0)
+    if "g" in segs: hbar(mid - TH // 2)
+    if "d" in segs: hbar(GH - TH)
+    if "f" in segs: vbar(0, 0, mid + 1)
+    if "b" in segs: vbar(GW - TV, 0, mid + 1)
+    if "e" in segs: vbar(0, mid, GH)
+    if "c" in segs: vbar(GW - TV, mid, GH)
+    return ["".join(row) for row in g]
+
+
+def colon_glyph():
+    w = TV
+    g = [[" "] * w for _ in range(GH)]
+    for band in (range(3, 5), range(GH - 5, GH - 3)):  # two square dots
+        for r in band:
+            for c in range(w):
+                g[r][c] = "█"
+    return ["".join(row) for row in g]
+
+
+GLYPHS = {ch: seg_glyph(segs) for ch, segs in SEGMENTS.items()}
+GLYPHS[":"] = colon_glyph()
+
+
+def move(row, col):
+    return f"{ESC}{row};{col}H"
+
+
+def make_alarm():
+    """Synthesize a short beeping alarm WAV and return its path (or None)."""
+    try:
+        path = os.path.join(tempfile.gettempdir(), "pomodoro_alarm.wav")
+        rate = 44100
+        frames = bytearray()
+        for _ in range(4):  # 4 beeps
+            for i in range(int(rate * 0.15)):
+                t = i / rate
+                env = min(1.0, t * 40, (0.15 - t) * 40)
+                val = 0.4 * env * (1 if (int(t * 880 * 2) % 2) else -1)
+                frames += struct.pack("<h", int(val * 32767))
+            frames += b"\x00\x00" * int(rate * 0.08)  # gap
+        with wave.open(path, "wb") as w:
+            w.setnchannels(1)
+            w.setsampwidth(2)
+            w.setframerate(rate)
+            w.writeframes(bytes(frames))
+        return path
+    except Exception:
+        return None
+
+
+ALARM_PATH = make_alarm()
+
+
+def play_alarm():
+    """Play the alarm non-blocking; fall back to terminal bell."""
+    if ALARM_PATH:
+        for p in (["paplay"], ["aplay", "-q"]):
+            try:
+                subprocess.Popen(
+                    p + [ALARM_PATH],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                return
+            except FileNotFoundError:
+                continue
+    sys.stdout.write("\a\a\a")
+    sys.stdout.flush()
+
+
+def big_rows(text):
+    """Render MM:SS as block-art rows."""
+    rows = ["" for _ in range(GH)]
+    for ch in text:
+        g = GLYPHS[ch]
+        for r in range(GH):
+            rows[r] += g[r] + "  "
+    return [row.rstrip() for row in rows]
+
+
+def draw(state):
+    cols, lines = os.get_terminal_size()
+    label = "POMODORO" if state["phase"] == "work" else "BREAK"
+    status = "RUNNING" if state["running"] else ("DONE" if state["remaining"] <= 0 else "PAUSED")
+    sub = f"{label} — {status}"
+    hint = "[SPACE] START/STOP    [R] RESET    [S] SKIP    [Q] QUIT"
+
+    s = max(0, int(state["remaining"]))
+    text = f"{s // 60:02d}:{s % 60:02d}"
+    rows = big_rows(text)
+    width = max(len(r) for r in rows)
+
+    total_h = len(rows) + 2  # digits + blank + subtitle
+    top = max(1, (lines - total_h) // 2 + 1)
+
+    out = [ESC + "2J"]
+    for i, r in enumerate(rows):
+        out.append(move(top + i, max(1, (cols - width) // 2 + 1)) + WHITE + r + RESET)
+    out.append(move(top + len(rows) + 1, max(1, (cols - len(sub)) // 2 + 1)) + DIM + sub + RESET)
+    out.append(move(lines, max(1, (cols - len(hint)) // 2 + 1)) + DIM + hint + RESET)
+    out.append(move(lines, 1))
+    sys.stdout.write("".join(out))
+    sys.stdout.flush()
+
+
+def main():
+    fd = sys.stdin.fileno()
+    old = termios.tcgetattr(fd)
+    state = {"phase": "work", "remaining": WORK, "running": False}
+    full = {"work": WORK, "break": BREAK}
+
+    def cleanup(*_):
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+        sys.stdout.write(ESC + "?25h" + ESC + "?1049l")  # show cursor, leave alt screen
+        sys.stdout.flush()
+
+    try:
+        tty.setcbreak(fd)
+        sys.stdout.write(ESC + "?1049h" + ESC + "?25l")  # alt screen, hide cursor
+        signal.signal(signal.SIGINT, lambda *a: (_ for _ in ()).throw(KeyboardInterrupt))
+
+        last = time.monotonic()
+        draw(state)
+
+        while True:
+            now = time.monotonic()
+            dt = now - last
+            last = now
+
+            if state["running"] and state["remaining"] > 0:
+                state["remaining"] -= dt
+                if state["remaining"] <= 0:
+                    state["remaining"] = 0
+                    state["running"] = False
+                    play_alarm()
+                    state["phase"] = "break" if state["phase"] == "work" else "work"
+                    state["remaining"] = full[state["phase"]]
+                draw(state)
+
+            r, _, _ = select.select([sys.stdin], [], [], 0.1)
+            if r:
+                key = sys.stdin.read(1)
+                if key in ("q", "\x03"):
+                    break
+                elif key == " ":
+                    state["running"] = not state["running"]
+                elif key == "r":
+                    state["remaining"] = full[state["phase"]]
+                    state["running"] = False
+                elif key == "s":
+                    state["phase"] = "break" if state["phase"] == "work" else "work"
+                    state["remaining"] = full[state["phase"]]
+                    state["running"] = False
+                draw(state)
+            elif state["running"]:
+                draw(state)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        cleanup()
+
+
+if __name__ == "__main__":
+    main()

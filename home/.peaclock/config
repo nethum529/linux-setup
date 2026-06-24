@@ -1,0 +1,6 @@
+# peaclock
+
+# 12-hour time, with seconds and the date shown
+set hour-24 off
+set seconds on
+set date on

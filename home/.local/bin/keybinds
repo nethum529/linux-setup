@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# Hyprland keybind cheat sheet.
+# Sources of truth (this file is hand-maintained — re-sync if you rebind):
+#   - ~/.local/share/ambxst/hyprland.conf   (Ambxst-generated binds)
+#   - ~/.config/hypr/hyprland.conf          (personal overrides, hyprexpo, hyprshell)
+#   - hyprshell config: ~/.config/hyprshell/config.toml  (Super+E switcher)
+# Live truth at any time:  hyprctl binds
+
+c_head=$'\e[1;36m'   # cyan bold  - section headers
+c_key=$'\e[1;33m'    # yellow     - key combos
+c_dim=$'\e[2m'       # dim        - notes
+c_off=$'\e[0m'
+
+row()  { printf "  ${c_key}%-26s${c_off} %s\n" "$1" "$2"; }
+head() { printf "\n${c_head}%s${c_off}\n" "$1"; }
+note() { printf "  ${c_dim}%s${c_off}\n" "$1"; }
+
+printf "${c_head}Hyprland keybinds${c_off}  ${c_dim}(Super = Windows key)${c_off}\n"
+
+head "Apps & launchers"
+row "Super (tap alone)"      "App launcher"
+row "Super + Return"         "Terminal (kitty)"
+row "Ctrl + Return"          "Firefox (new window)"
+row "Super + D"              "Dashboard"
+row "Super + A"              "AI assistant"
+row "Super + V"              "Clipboard history"
+row "Super + N"              "Notes"
+row "Super + T"              "tmux"
+row "Super + S"              "Tools"
+row "Super + ,"              "Wallpapers"
+row "Super + ."              "Emoji picker"
+row "Super + Shift + A"      "Lens (region search / OCR)"
+
+head "Window switching & overview"
+row "Super + Tab"            "Workspace overview (hyprexpo)"
+note "hold Super, tap Tab = next  ·  Shift+Tab = back  ·  release Super / Enter = pick  ·  Esc = cancel"
+row "Super + Alt + Tab"      "Ambxst overview"
+row "Super + E"              "Window switcher (hyprshell), forward"
+row "Super + Shift + E"      "Window switcher, reverse"
+row "Super + \`"              "Window switcher, reverse"
+note "hold Super, tap E to cycle, release Super to select"
+row "Alt + Tab"              "Cycle to next window (and raise)"
+
+head "Windows"
+row "Super + Q  /  Super + W" "Close window"
+row "Super + C"              "Toggle floating (tiled <-> free)"
+row "Super + F"              "Fullscreen / maximize"
+row "Super + arrows"         "Move focus  (also Super+Ctrl+H/J/K/L)"
+row "Super + Shift + arrows" "Move window  (also Super+Shift+H/J/K/L)"
+row "Super + Alt + Left/Right" "Resize column width -/+  (or Alt+H/L)"
+row "Super + Alt + Up/Down"  "Resize window height -/+  (or Alt+K/J)"
+row "Super + Alt + Space"    "Promote window to master"
+row "Super + Ctrl + Space"   "Toggle fit"
+row "Super + Shift + Space"  "Reset column width to config"
+row "Super + Alt + Ctrl + Left/Right" "Swap column left / right (or H/L)"
+
+head "Workspaces"
+row "Super + 1..0"           "Switch to workspace 1-10"
+row "Super + Z  /  Super + X" "Previous / next workspace"
+row "Super + scroll"         "Cycle workspaces"
+row "Super + Shift + Z / X"  "Prev / next existing workspace"
+row "Super + Shift + 1..0"   "Move window to workspace 1-10 (and follow)"
+row "Super + Alt + 1..0"     "Move window to workspace 1-10 (stay put)"
+row "Super + Ctrl + Alt + 1..0" "Move whole column to workspace 1-10"
+row "Super + Shift + V"      "Toggle special (scratchpad) workspace"
+row "Super + Alt + V"        "Move window to special workspace"
+
+head "Mouse"
+row "Super + Left-drag"      "Move window"
+row "Super + Right-drag"     "Resize window"
+
+head "Media & hardware keys"
+row "Play / Prev / Next"     "Media control (playerctl)"
+row "Volume Up / Down / Mute" "Audio sink volume (wpctl)"
+row "Brightness Up / Down"   "Screen brightness +/-5%"
+
+head "System & session"
+row "Super + L"              "Lock session"
+row "Super + Esc"            "Power menu"
+row "Super + Shift + Q"      "Exit Hyprland"
+row "Super + Shift + S"      "Screenshot"
+row "Super + Shift + R"      "Screen record"
+row "Super + Shift + C"      "Ambxst settings"
+row "Super + Alt + B"        "Reload Ambxst"
+row "Super + Ctrl + Alt + B" "Quit Ambxst"
+note "Lid close: lock + screen off  ·  lid open: screen on"
+
+printf "\n${c_dim}No 'minimize' bind (Hyprland has no native minimize — use a special workspace).${c_off}\n"
+printf "${c_dim}Live list: hyprctl binds   ·   Configs: ~/.config/hypr/ , ~/.local/share/ambxst/${c_off}\n"
