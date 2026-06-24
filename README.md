@@ -1,7 +1,6 @@
 # linux-setup
 
-My CachyOS (Arch-based) desktop setup — a Hyprland + Ambxst Wayland rice, shell,
-terminals, and the small scripts that hold it together. Managed with
+My CachyOS (Arch-based) desktop setup. Managed with
 [GNU Stow](https://www.gnu.org/software/stow/): every file under `home/` mirrors
 its real location under `$HOME` and gets symlinked there.
 
