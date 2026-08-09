@@ -1,5 +1,5 @@
 {
-  "oledMode": true,
+  "oledMode": false,
   "lightMode": false,
   "roundness": 16,
   "font": "Roboto Condensed",

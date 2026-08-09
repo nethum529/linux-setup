@@ -1,0 +1,69 @@
+# Core stack for this setup — fed to `pacman -S --needed` by install.sh.
+# Full explicit inventory of the source machine: docs/packages-explicit.txt.
+# CachyOS repos carry the -bin entries; on plain Arch drop or replace them.
+
+# compositor + shell
+hyprland
+quickshell
+xdg-desktop-portal-hyprland
+hyprpolkitagent
+nwg-displays
+fuzzel
+grim
+slurp
+wl-clipboard
+wl-clip-persist
+brightnessctl
+playerctl
+pavucontrol
+wlsunset
+wtype
+
+# terminals + shell tools
+kitty
+ghostty
+alacritty
+fish
+tmux
+btop
+cava
+peaclock
+fastfetch
+micro
+neovim
+ripgrep
+stow
+
+# fonts
+ttf-jetbrains-mono-nerd
+ttf-nerd-fonts-symbols
+ttf-meslo-nerd
+noto-fonts
+noto-fonts-emoji
+
+# daily apps
+firefox
+obsidian
+discord
+bitwarden
+libreoffice-fresh
+haruna
+easyeffects
+solaar
+
+# dev
+git
+github-cli
+lazygit
+nodejs
+npm
+python
+uv
+python-pipx
+docker
+docker-compose
+
+# AI tooling (CachyOS repos)
+opencode
+claude-desktop-bin
+ollama-cuda
