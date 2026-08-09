@@ -1,7 +1,1 @@
-{
-  "shown": 10,
-  "showAppIcons": true,
-  "alwaysShowNumbers": false,
-  "showNumbers": false,
-  "dynamic": false
-}
+{ "shown": 10, "showAppIcons": false, "alwaysShowNumbers": true, "showNumbers": true, "dynamic": false }

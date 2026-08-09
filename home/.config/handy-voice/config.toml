@@ -1,0 +1,9 @@
+# Handy Voice Activation configuration.
+# See docs/ARCHITECTURE.md and README.md for every option.
+wake_phrase = "mars"
+wake_confirmations = 1
+handy_toggle_method = "sigusr2"
+silence_timeout = 1.25
+max_recording_duration = 120.0
+after_stop_cooldown = 0.5
+min_interval = 0.5

@@ -1,0 +1,49 @@
+#!/bin/sh
+# tbinds - tmux keybind cheatsheet. Prefix is Ctrl+b unless noted.
+
+b=$(printf '\033[1m')      # bold
+d=$(printf '\033[2m')      # dim
+c=$(printf '\033[36m')     # cyan (keys)
+y=$(printf '\033[33m')     # yellow (headers)
+r=$(printf '\033[0m')      # reset
+
+cat <<EOF
+
+  ${b}tmux keybinds${r}  ${d}prefix = Ctrl+b  (press it, release, then the key)${r}
+
+  ${y}WINDOWS${r} ${d}(the crew tabs)${r}
+    ${c}Ctrl+b c${r}        create new window
+    ${c}Ctrl+b n${r} / ${c}p${r}    next / previous window
+    ${c}Ctrl+b 0${r}-${c}9${r}      jump to window N
+    ${c}Ctrl+b l${r}        last window (toggle)
+    ${c}Ctrl+b w${r}        pick from visual list
+    ${c}Ctrl+b ,${r}        rename window
+    ${c}Ctrl+b .${r}        renumber (move to new index)
+    ${c}Ctrl+b &${r}        kill window
+
+  ${y}PANES${r} ${d}(splits inside one window)${r}
+    ${c}Ctrl+b %${r}        split left / right
+    ${c}Ctrl+b "${r}        split top / bottom
+    ${c}Ctrl+b arrows${r}   move focus between panes
+    ${c}Ctrl+b o${r}        cycle to next pane
+    ${c}Ctrl+b ;${r}        toggle to last pane
+    ${c}Ctrl+b { }${r}      swap pane left / right
+    ${c}Ctrl+b z${r}        zoom pane fullscreen (toggle)
+    ${c}Ctrl+b space${r}    cycle pane layouts
+    ${c}Ctrl+b !${r}        break pane into its own window
+    ${c}Ctrl+b x${r}        kill pane
+    ${c}Ctrl+b${r}+hold ${c}arrow${r}  resize pane
+
+  ${y}SESSION / MISC${r}
+    ${c}Ctrl+b d${r}        detach (everything keeps running)
+    ${c}Ctrl+b [${r}        scroll/copy mode (q exits)
+    ${c}Ctrl+b ]${r}        paste
+    ${c}Ctrl+b ?${r}        list every keybind (live)
+    ${d}shell:${r} ${c}tmux ls${r}  ${c}tmux attach -t NAME${r}  ${c}tmux kill-session -t NAME${r}
+
+  ${y}INSIDE A CLAUDE / TUI SESSION${r}
+    ${d}- prefix is grabbed by tmux first, so all binds work mid-session${r}
+    ${d}- switching windows does NOT pause the app; it keeps running${r}
+    ${d}- scroll with the app's own scroll, not Ctrl+b [ (alt-screen TUI)${r}
+
+EOF

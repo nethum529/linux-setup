@@ -2300,6 +2300,29 @@
                 }
             ],
             "name": "Tool Ring"
+        },
+        {
+            "actions": [
+                {
+                    "args": {
+                        "dispatcher": "exec",
+                        "argument": "discord",
+                        "flags": ""
+                    },
+                    "id": "legacy.dispatcher",
+                    "layouts": []
+                }
+            ],
+            "enabled": true,
+            "keys": [
+                {
+                    "key": "D",
+                    "modifiers": [
+                        "ALT"
+                    ]
+                }
+            ],
+            "name": "Open Discord"
         }
     ],
     "defaultAmbxstBinds": {
