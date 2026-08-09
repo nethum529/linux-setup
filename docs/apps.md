@@ -42,7 +42,7 @@ file is the curated map of what matters and where it came from.
 - **agentdash** usage indicator — see [usage-indicator.md](usage-indicator.md)
 - axi toolchain in `~/.local/bin` (local npm installs, symlinked):
   `gh-axi`, `sqlite-axi`, `npm-axi`, `chrome-devtools-axi`, `lavish-axi`,
-  `codex-axi`, plus `herdr`, `worker-health`, `seer`, `hermes`, `perci`
+  `codex-axi`, plus `herdr`, `worker-health`, `seer`, `hermes`
 
 ## AppImages (`~/Applications`)
 
@@ -70,7 +70,7 @@ file is the curated map of what matters and where it came from.
 | `agentdash.service` | usage-indicator poller daemon |
 | `hva.service` | wake-word voice activation daemon |
 | `worker-health.service` + `.timer` | agent-worker liveness checks every 5 min |
-| `hermes-gateway.service`, `perci-*.service`, `seer-agent.service` | personal agent stack |
+| `hermes-gateway.service` | personal agent stack |
 
 ## Companion repos
 
