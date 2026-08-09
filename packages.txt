@@ -2,6 +2,15 @@
 # Full explicit inventory of the source machine: docs/packages-explicit.txt.
 # CachyOS repos carry the -bin entries; on plain Arch drop or replace them.
 
+# session plumbing (audio, Qt/NVIDIA Wayland glue, login manager)
+pipewire
+pipewire-alsa
+pipewire-pulse
+wireplumber
+qt6-wayland
+egl-wayland
+plasma-login-manager
+
 # compositor + shell
 hyprland
 quickshell
