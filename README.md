@@ -37,8 +37,10 @@ home/                       # stow package → symlinked into ~
 tools/
   agentdash/                          # vendored usage indicator (no upstream)
   gen-gpu-conf.sh                     # detects GPUs → writes gpu.conf + udev rule
+AGENTS.md                             # agent bring-up checklist + verify steps
 docs/
   apps.md                             # curated installed-software inventory
+  debugging.md                        # symptom → cause → fix for bring-up failures
   hardware.md                         # GPU matrix + per-machine assumptions
   packages-explicit.txt               # pacman -Qqe snapshot (ground truth)
   tailscale.md                        # tailnet shape + the CachyOS MagicDNS fix
