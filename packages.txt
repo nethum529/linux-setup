@@ -95,3 +95,8 @@ docker-compose
 opencode
 claude-desktop-bin
 ollama-cuda
+
+# tool-ring runtime (radial launcher, Super+G)
+gtk4
+gtk4-layer-shell
+python-gobject
