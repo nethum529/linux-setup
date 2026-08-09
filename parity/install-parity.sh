@@ -63,9 +63,26 @@ else
 fi
 
 # --------------------------------------------------------------- wallpapers
+# Ambxst draws the wallpaper itself (QML layer) — no swww/hyprpaper daemon.
+# State: ~/.cache/ambxst/wallpapers.json (wallPath + currentWall + matugen).
 echo "==> wallpapers -> ~/Pictures/Wallpapers"
 mkdir -p "$HOME/Pictures/Wallpapers"
 cp -n wallpapers/* "$HOME/Pictures/Wallpapers/"
+if [[ ! -f "$HOME/.cache/ambxst/wallpapers.json" ]]; then
+    echo "==> seeding wallpaper state (laptop default: renwallpaper)"
+    mkdir -p "$HOME/.cache/ambxst"
+    cat > "$HOME/.cache/ambxst/wallpapers.json" <<EOF
+{
+    "activeColorPreset": "Catppuccin",
+    "currentWall": "$HOME/Pictures/Wallpapers/renwallpaper.jpg",
+    "matugenScheme": "scheme-tonal-spot",
+    "perScreenWallpapers": {
+    },
+    "tintEnabled": false,
+    "wallPath": "$HOME/Pictures/Wallpapers"
+}
+EOF
+fi
 
 # ------------------------------------------------------------ prebuilt tools
 echo "==> herdr, herdmates, teammux, hyprshell -> ~/.local/bin"
