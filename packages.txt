@@ -45,13 +45,26 @@ noto-fonts-emoji
 
 # daily apps
 firefox
+chromium
 obsidian
 discord
+spotify
 bitwarden
 libreoffice-fresh
 haruna
 easyeffects
 solaar
+kdeconnect
+
+# gaming
+steam
+heroic-games-launcher-bin
+mangohud
+lib32-mangohud
+protonup-qt
+
+# networking extras
+proton-vpn-gtk-app
 
 # networking
 tailscale
