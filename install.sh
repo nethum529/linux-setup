@@ -50,6 +50,18 @@ rsync -a tools/agentdash/ "$HOME/Projects/agentdash/"
 systemctl --user daemon-reload
 systemctl --user enable --now agentdash.service
 
+# --------------------------------------------------------------- tailscale ---
+# NetworkManager writing resolv.conf as a plain file leaves resolved in
+# "foreign" mode and breaks MagicDNS (docs/tailscale.md). Same stub nameserver
+# either way, so the symlink is a no-op for everything but Tailscale.
+if command -v tailscale >/dev/null && systemctl is-active -q systemd-resolved \
+   && [[ "$(readlink /etc/resolv.conf)" != /run/systemd/resolve/stub-resolv.conf ]]; then
+    echo "==> pointing /etc/resolv.conf at the systemd-resolved stub (MagicDNS fix)"
+    sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+    sudo systemctl enable --now tailscaled
+    sudo systemctl restart tailscaled
+fi
+
 # ----------------------------------------------------- companion repos -------
 clone() { # clone <url> <dir> — clone once, otherwise leave the checkout alone
     [[ -d "$2/.git" ]] && { echo "    $2 already cloned"; return 0; }
@@ -74,6 +86,7 @@ Done. Remaining manual steps:
     autostart entry is already stowed.
   - Claude Code CLI:            npm install -g @anthropic-ai/claude-code
   - Log in once to Claude Code so agentdash can read usage credentials.
+  - Tailscale:                  sudo tailscale up   (prints the auth link)
   - Reload Ambxst binds:        Super+Alt+B  (or restart the shell)
   - Monitors: hypr/monitors.conf ships this machine's layout; run nwg-displays
     to redo it for different hardware.
