@@ -33,6 +33,8 @@ micro
 neovim
 ripgrep
 stow
+toilet
+lolcat
 
 # fonts
 ttf-jetbrains-mono-nerd

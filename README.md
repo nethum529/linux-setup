@@ -104,3 +104,10 @@ AMD/Intel-only boxes each get the right env. Matrix and reasoning:
 | `pomodoro` | zero-dependency peaclock-style Pomodoro TUI            |
 | `tbinds`   | tmux keybind cheat sheet                               |
 | `usage`    | Claude Code + Codex rate-limit usage (agentdash CLI)   |
+
+Fish functions (`home/.config/fish/functions/`): `danger` / `cdanger` launch
+Claude Code / Codex with sandboxing off (danger pre-accepts the folder-trust
+dialog), `opencode` wrapper with `--m`/`--e` model + effort flags (in
+config.fish), `brave-cdp` points chrome-devtools-axi at a running Brave,
+`kbinds` kitty cheat sheet, `crun` compile-and-run, `name`/`na`/`nethum`
+terminal banners, `usage` rate-limit readout.
