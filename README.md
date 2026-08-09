@@ -41,6 +41,7 @@ docs/
   apps.md                             # curated installed-software inventory
   hardware.md                         # GPU matrix + per-machine assumptions
   packages-explicit.txt               # pacman -Qqe snapshot (ground truth)
+  tailscale.md                        # tailnet shape + the CachyOS MagicDNS fix
   voice.md  usage-indicator.md        # the voice stack + usage indicator
 packages.txt                          # core stack for pacman --needed
 install.sh                            # one-shot: packages + stow + udev + repos + services
