@@ -87,6 +87,12 @@ clone https://github.com/nethum529/handy-voice-activation "$HOME/handy-voice-act
 # Its installer builds the venv, places ~/.local/bin/hva, and enables hva.service.
 ( cd "$HOME/handy-voice-activation" && ./install.sh )
 
+# ------------------------------------------------------------ parity layer ---
+# Ambxst shell + custom widgets, hyprexpo (Super+Tab), wallpapers, prebuilt
+# tools, axi toolchain — everything needed for 1:1 with the source laptop.
+echo "==> parity layer (see parity/README.md)"
+./parity/install-parity.sh
+
 cat <<'EOF'
 
 Done. Remaining manual steps:
