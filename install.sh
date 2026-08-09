@@ -36,11 +36,11 @@ WARN
     exit 1
 fi
 
-# -------------------------------------------------------------- udev rule ---
-echo "==> installing udev rule for the Hyprland multi-GPU DRM symlinks"
-sudo install -m 0644 etc/udev/rules.d/99-hypr-gpu.rules /etc/udev/rules.d/
-sudo udevadm control --reload-rules
-sudo udevadm trigger --subsystem-match=drm --action=add
+# ------------------------------------------------------------- GPU config ---
+# Detects the GPU topology and generates ~/.config/hypr/gpu.conf plus the
+# hybrid-only udev rule with THIS machine's PCI addresses (docs/hardware.md).
+echo "==> generating GPU config for this machine"
+./tools/gen-gpu-conf.sh
 
 # -------------------------------------------------- agentdash (vendored) -----
 # The usage indicator lives in tools/agentdash and runs from ~/Projects/agentdash.
@@ -78,7 +78,8 @@ Done. Remaining manual steps:
   - Monitors: hypr/monitors.conf ships this machine's layout; run nwg-displays
     to redo it for different hardware.
 
-Note: hyprland.conf, monitors.conf and ambxst/binds.json are tuned to a specific
-ASUS laptop (AMD iGPU + RTX 4070, PCI addresses, monitor names) and assume the
-username 'nethum'. Adjust before expecting them to work elsewhere.
+Note: GPU env + udev rule are auto-generated for this machine's hardware
+(re-run tools/gen-gpu-conf.sh after GPU changes). monitors.conf ships the
+source laptop's layout — run nwg-displays to redo it. Remaining assumptions
+(username 'nethum', ASUS tools) are listed in docs/hardware.md.
 EOF

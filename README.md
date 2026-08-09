@@ -24,7 +24,7 @@ The Ambxst bar and control center — quick toggles, media, calendar, notificati
 ```
 home/                       # stow package → symlinked into ~
   .config/
-    hypr/       hyprland.conf        # env + the multi-GPU fix (see below)
+    hypr/       hyprland.conf        # sources generated gpu.conf (see below)
                 monitors.conf  workspaces.conf  monitors.lua   # nwg-displays owns these
     ambxst/     binds.json + per-feature config (bar, dock, theme, …)
     handy-voice/  config.toml + env  # wake-word daemon config (docs/voice.md)
@@ -37,12 +37,12 @@ home/                       # stow package → symlinked into ~
   .local/bin/   lidawake  keybinds  pomodoro  tbinds  usage
 tools/
   agentdash/                          # vendored usage indicator (no upstream)
+  gen-gpu-conf.sh                     # detects GPUs → writes gpu.conf + udev rule
 docs/
   apps.md                             # curated installed-software inventory
+  hardware.md                         # GPU matrix + per-machine assumptions
   packages-explicit.txt               # pacman -Qqe snapshot (ground truth)
   voice.md  usage-indicator.md        # the voice stack + usage indicator
-etc/
-  udev/rules.d/99-hypr-gpu.rules      # stable DRM symlinks Hyprland needs
 packages.txt                          # core stack for pacman --needed
 install.sh                            # one-shot: packages + stow + udev + repos + services
 ```
@@ -62,17 +62,21 @@ prints the few remaining manual steps (Handy AppImage, Claude Code login).
 
 ## The multi-GPU fix (the interesting part)
 
-On a hybrid AMD+NVIDIA laptop, Hyprland's allocator must open the **AMD** card
+On a hybrid iGPU+NVIDIA laptop, Hyprland's allocator must open the **iGPU**
 first or it crashes on launch with *"no allocator available"*. The catch:
 Aquamarine splits `AQ_DRM_DEVICES` on `:`, and PCI by-path names contain colons,
-so they get shredded. The fix is colon-free, rename-stable DRM symlinks created
-by `etc/udev/rules.d/99-hypr-gpu.rules`, then:
+so they get shredded. The fix is colon-free, rename-stable DRM symlinks from a
+generated udev rule, then:
 
 ```
-env = AQ_DRM_DEVICES,/dev/dri/amd-card:/dev/dri/nv-card
+env = AQ_DRM_DEVICES,/dev/dri/igpu-card:/dev/dri/nv-card
 ```
 
-Full reasoning is commented inline in `home/.config/hypr/hyprland.conf`.
+All of this is machine-specific, so `tools/gen-gpu-conf.sh` detects the GPU
+topology and generates both the udev rule (real PCI addresses) and
+`~/.config/hypr/gpu.conf` — hybrid, NVIDIA-only (RTX 50 series included), and
+AMD/Intel-only boxes each get the right env. Matrix and reasoning:
+[docs/hardware.md](docs/hardware.md).
 
 ## Voice activation and usage indicator
 
