@@ -36,6 +36,15 @@ WARN
     exit 1
 fi
 
+# ---------------------------------------------------------- login manager ---
+# plasma-login-manager (CachyOS's SDDM successor) — enable only if no display
+# manager claims the boot yet, so an existing setup is never hijacked.
+if [[ ! -e /etc/systemd/system/display-manager.service ]] \
+   && systemctl list-unit-files plasmalogin.service &>/dev/null; then
+    echo "==> enabling plasmalogin display manager"
+    sudo systemctl enable plasmalogin.service
+fi
+
 # ------------------------------------------------------------- GPU config ---
 # Detects the GPU topology and generates ~/.config/hypr/gpu.conf plus the
 # hybrid-only udev rule with THIS machine's PCI addresses (docs/hardware.md).
