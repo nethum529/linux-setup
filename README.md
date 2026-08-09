@@ -37,6 +37,8 @@ home/                       # stow package → symlinked into ~
 tools/
   agentdash/                          # vendored usage indicator (no upstream)
   gen-gpu-conf.sh                     # detects GPUs → writes gpu.conf + udev rule
+parity/                               # 1:1 layer: Ambxst + custom widgets, hyprexpo,
+                                      #   wallpapers, herdr & co, axi toolchain
 AGENTS.md                             # agent bring-up checklist + verify steps
 docs/
   apps.md                             # curated installed-software inventory

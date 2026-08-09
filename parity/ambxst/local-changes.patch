@@ -1,0 +1,474 @@
+diff --git a/config/Config.qml b/config/Config.qml
+index c9bb6ee5..475d2150 100644
+--- a/config/Config.qml
++++ b/config/Config.qml
+@@ -1046,6 +1046,7 @@ Singleton {
+                 property int restTime: 300
+                 property bool autoStart: false
+                 property bool syncSpotify: false
++                property int totalStudied: 0
+             }
+         }
+     }
+diff --git a/config/defaults/system.js b/config/defaults/system.js
+index e3619102..2e77c901 100644
+--- a/config/defaults/system.js
++++ b/config/defaults/system.js
+@@ -43,6 +43,7 @@ var data = {
+         "workTime": 1500,
+         "restTime": 300,
+         "autoStart": false,
+-        "syncSpotify": false
++        "syncSpotify": false,
++        "totalStudied": 0
+     }
+ }
+diff --git a/modules/bar/BarContent.qml b/modules/bar/BarContent.qml
+index b9e57ca7..ee38d6a8 100644
+--- a/modules/bar/BarContent.qml
++++ b/modules/bar/BarContent.qml
+@@ -528,6 +528,38 @@ Item {
+                             endRadius: root.innerRadius
+                         }
+ 
++                        Bar.WifiIndicator {
++                            id: wifiIndicator
++                            bar: root
++                            layerEnabled: root.shadowsEnabled
++                            startRadius: root.innerRadius
++                            endRadius: root.innerRadius
++                        }
++
++                        Bar.BluetoothIndicator {
++                            id: bluetoothIndicator
++                            bar: root
++                            layerEnabled: root.shadowsEnabled
++                            startRadius: root.innerRadius
++                            endRadius: root.innerRadius
++                        }
++
++                        Bar.AirPodsButton {
++                            id: airpodsButton
++                            bar: root
++                            layerEnabled: root.shadowsEnabled
++                            startRadius: root.innerRadius
++                            endRadius: root.innerRadius
++                        }
++
++                        Bar.AudioIndicator {
++                            id: audioIndicator
++                            bar: root
++                            layerEnabled: root.shadowsEnabled
++                            startRadius: root.innerRadius
++                            endRadius: root.innerRadius
++                        }
++
+                         Bar.BatteryIndicator {
+                             id: batteryIndicator
+                             bar: root
+@@ -536,6 +568,30 @@ Item {
+                             endRadius: root.innerRadius
+                         }
+ 
++                        Bar.LidAwakeButton {
++                            id: lidAwakeButton
++                            bar: root
++                            layerEnabled: root.shadowsEnabled
++                            startRadius: root.innerRadius
++                            endRadius: root.innerRadius
++                        }
++
++                        Bar.SleepTimeoutButton {
++                            id: sleepTimeoutButton
++                            bar: root
++                            layerEnabled: root.shadowsEnabled
++                            startRadius: root.innerRadius
++                            endRadius: root.innerRadius
++                        }
++
++                        Bar.AgentUsage {
++                            id: agentUsage
++                            bar: root
++                            layerEnabled: root.shadowsEnabled
++                            startRadius: root.innerRadius
++                            endRadius: root.innerRadius
++                        }
++
+                         Clock {
+                             id: clockComponent
+                             bar: root
+@@ -743,6 +799,14 @@ Item {
+                             endRadius: root.innerRadius
+                         }
+ 
++                        Bar.AgentUsage {
++                            id: agentUsageVert
++                            bar: root
++                            layerEnabled: root.shadowsEnabled
++                            startRadius: root.innerRadius
++                            endRadius: root.innerRadius
++                        }
++
+                         Clock {
+                             id: clockComponentVert
+                             bar: root
+diff --git a/modules/bar/clock/Pomodoro.qml b/modules/bar/clock/Pomodoro.qml
+index 5f64c1a4..2d03a093 100644
+--- a/modules/bar/clock/Pomodoro.qml
++++ b/modules/bar/clock/Pomodoro.qml
+@@ -18,6 +18,41 @@ Item {
+     property bool isRunning: false
+     property bool isWorkSession: true
+     property bool alarmActive: false
++
++    // --- Study stats ---
++    property int completedWorkPeriods: 0   // work periods finished this session (resettable)
++    property int sessionStudied: 0         // seconds studied this session (resettable)
++    property int unflushedStudied: 0       // studied seconds not yet written to persistent total
++
++    function flushStudied() {
++        if (unflushedStudied > 0) {
++            Config.system.pomodoro.totalStudied += unflushedStudied;
++            unflushedStudied = 0;
++        }
++    }
++
++    function resetSession() {
++        flushStudied();
++        sessionStudied = 0;
++        completedWorkPeriods = 0;
++    }
++
++    function fmtDuration(secs) {
++        let h = Math.floor(secs / 3600);
++        let m = Math.floor((secs % 3600) / 60);
++        if (h > 0) return h + "h " + m + "m";
++        if (m > 0) return m + "m";
++        return secs + "s";
++    }
++
++    function skipRest() {
++        stopAlarm();
++        isWorkSession = true;
++        timeLeft = Config.system.pomodoro.workTime;
++        totalTime = timeLeft;
++        visualProgress = 1.0;
++        isRunning = Config.system.pomodoro.autoStart;
++    }
+     
+     // --- IPC & Notifications ---
+     IpcHandler {
+@@ -72,7 +107,10 @@ Item {
+         }
+     }
+ 
+-    onIsRunningChanged: updateSpotify()
++    onIsRunningChanged: {
++        if (!isRunning) flushStudied();
++        updateSpotify();
++    }
+     onIsWorkSessionChanged: updateSpotify()
+     
+     Connections {
+@@ -133,6 +171,7 @@ Item {
+ 
+     function startAlarm() {
+         let finishedSession = isWorkSession ? "Work" : "Rest";
++        if (isWorkSession) root.completedWorkPeriods++;
+         isRunning = false;
+         alarmActive = true;
+         visualProgress = 0; // Ensure it's exactly 0
+@@ -213,6 +252,10 @@ Item {
+         repeat: true
+         onTriggered: {
+             if (root.timeLeft > 0) {
++                if (root.isWorkSession) {
++                    root.sessionStudied++;
++                    root.unflushedStudied++;
++                }
+                 root.timeLeft--;
+                 if (root.timeLeft === 0) {
+                     startAlarm();
+@@ -264,6 +307,27 @@ Item {
+ 
+             Item { Layout.fillWidth: true }
+ 
++            // Skip Rest (only meaningful during a rest session)
++            StyledRect {
++                variant: "common"
++                implicitWidth: 28; implicitHeight: 28
++                radius: Styling.radius(-4)
++                visible: !root.isWorkSession
++                Text {
++                    anchors.centerIn: parent
++                    text: Icons.forward
++                    font.family: Icons.font; font.pixelSize: 14
++                    color: skipMouse.containsMouse ? Styling.srItem("overprimary") : Colors.overBackground
++                }
++                MouseArea {
++                    id: skipMouse
++                    anchors.fill: parent
++                    hoverEnabled: true
++                    cursorShape: Qt.PointingHandCursor
++                    onClicked: root.skipRest()
++                }
++            }
++
+             // Reset
+             StyledRect {
+                 variant: "common"
+@@ -410,6 +474,37 @@ Item {
+             }
+         }
+ 
++        // Stats Row
++        RowLayout {
++            Layout.fillWidth: true
++            Layout.alignment: Qt.AlignHCenter
++            spacing: 18
++
++            Stat { label: "Periods"; value: root.completedWorkPeriods.toString() }
++            Stat { label: "Session"; value: root.fmtDuration(root.sessionStudied) }
++            Stat { label: "Total"; value: root.fmtDuration(Config.system.pomodoro.totalStudied + root.unflushedStudied) }
++
++            // Reset session stats
++            StyledRect {
++                variant: "common"
++                implicitWidth: 24; implicitHeight: 24
++                radius: Styling.radius(-4)
++                Text {
++                    anchors.centerIn: parent
++                    text: Icons.arrowCounterClockwise
++                    font.family: Icons.font; font.pixelSize: 12
++                    color: resetSessionMouse.containsMouse ? Styling.srItem("overprimary") : Colors.outline
++                }
++                MouseArea {
++                    id: resetSessionMouse
++                    anchors.fill: parent
++                    hoverEnabled: true
++                    cursorShape: Qt.PointingHandCursor
++                    onClicked: root.resetSession()
++                }
++            }
++        }
++
+         // Settings Row
+         RowLayout {
+             Layout.fillWidth: true
+@@ -522,6 +617,29 @@ Item {
+         }
+     }
+ 
++    component Stat: ColumnLayout {
++        id: st
++        property string label: ""
++        property string value: ""
++        spacing: 0
++
++        Text {
++            Layout.alignment: Qt.AlignHCenter
++            text: st.value
++            font.family: Config.theme.font
++            font.pixelSize: Styling.fontSize(0)
++            font.weight: Font.Bold
++            color: Colors.overBackground
++        }
++        Text {
++            Layout.alignment: Qt.AlignHCenter
++            text: st.label
++            font.family: Config.theme.font
++            font.pixelSize: Styling.fontSize(-2)
++            color: Colors.outline
++        }
++    }
++
+     component ControlBtn: StyledRect {
+         id: cBtn
+         property string text: ""
+diff --git a/modules/bar/workspaces/Workspaces.qml b/modules/bar/workspaces/Workspaces.qml
+index 48f68cdd..0014e00f 100644
+--- a/modules/bar/workspaces/Workspaces.qml
++++ b/modules/bar/workspaces/Workspaces.qml
+@@ -18,7 +18,8 @@ Item {
+     readonly property var monitor: AxctlService.monitorFor(bar.screen)
+     readonly property Toplevel activeWindow: ToplevelManager.activeToplevel
+ 
+-    readonly property int workspaceGroup: Math.floor(((monitor && monitor.activeWorkspace ? monitor.activeWorkspace.id : undefined) - 1 || 0) / Config.workspaces.shown)
++    // Fix B: disable paging — pills are always a fixed 1..shown row, never renumbered by the active workspace.
++    readonly property int workspaceGroup: 0
+     property var workspaceOccupied: []
+     property var dynamicWorkspaceIds: []
+     property int effectiveWorkspaceCount: Config.workspaces.dynamic ? dynamicWorkspaceIds.length : Config.workspaces.shown
+@@ -34,7 +35,7 @@ Item {
+     property real workspaceIconSizeShrinked: Math.round(workspaceButtonWidth * 0.5)
+     property real workspaceIconOpacityShrinked: 1
+     property real workspaceIconMarginShrinked: -4
+-    property int workspaceIndexInGroup: Config.workspaces.dynamic ? dynamicWorkspaceIds.indexOf((monitor && monitor.activeWorkspace ? monitor.activeWorkspace.id : undefined) || 1) : ((monitor && monitor.activeWorkspace ? monitor.activeWorkspace.id : undefined) - 1 || 0) % Config.workspaces.shown
++    property int workspaceIndexInGroup: Config.workspaces.dynamic ? dynamicWorkspaceIds.indexOf((monitor && monitor.activeWorkspace ? monitor.activeWorkspace.id : undefined) || 1) : (((monitor && monitor.activeWorkspace ? monitor.activeWorkspace.id : undefined) || 1) >= 1 && ((monitor && monitor.activeWorkspace ? monitor.activeWorkspace.id : undefined) || 1) <= Config.workspaces.shown ? ((monitor && monitor.activeWorkspace ? monitor.activeWorkspace.id : undefined) || 1) - 1 : -1)
+     property var occupiedRanges: []
+ 
+     function updateWorkspaceOccupied() {
+@@ -290,7 +291,7 @@ Item {
+     StyledRect {
+         id: activeHighlightH
+         variant: "primary"
+-        visible: orientation === "horizontal"
++        visible: orientation === "horizontal" && workspaceIndexInGroup >= 0
+         z: 2
+         property real activeWorkspaceMargin: 4
+         // Two animated indices to create a stretchy transition effect
+@@ -346,7 +347,7 @@ Item {
+     StyledRect {
+         id: activeHighlightV
+         variant: "primary"
+-        visible: orientation === "vertical"
++        visible: orientation === "vertical" && workspaceIndexInGroup >= 0
+         z: 2
+         property real activeWorkspaceMargin: 4
+         // Two animated indices to create a stretchy transition effect
+diff --git a/modules/dock/DockContent.qml b/modules/dock/DockContent.qml
+index a6b31db3..ce042674 100644
+--- a/modules/dock/DockContent.qml
++++ b/modules/dock/DockContent.qml
+@@ -6,6 +6,7 @@ import QtQuick.Layouts
+ import QtQuick.Effects
+ import Quickshell
+ import Quickshell.Wayland
++import Quickshell.Io
+ import qs.modules.theme
+ import qs.modules.services
+ import qs.modules.components
+@@ -87,12 +88,14 @@ Item {
+     readonly property bool hasWindows: toplevels.length > 0
+ 
+     // Fullscreen detection
++    // Scan by monitor, not just the base active workspace, so a fullscreen
++    // window shown via a special workspace overlay is still detected.
+     readonly property bool activeWindowFullscreen: {
+-        if (!compositorMonitor || !toplevels) return false;
++        if (!compositorMonitor || !AxctlService.clients.values) return false;
+ 
+-        // Check all toplevels on active workspace
+-        for (var i = 0; i < toplevels.length; i++) {
+-            if (toplevels[i].fullscreen == true) {
++        const vals = AxctlService.clients.values;
++        for (var i = 0; i < vals.length; i++) {
++            if (vals[i].fullscreen == true && vals[i].monitor === compositorMonitor.id) {
+                return true;
+             }
+         }
+@@ -103,16 +106,81 @@ Item {
+     property bool reveal: {
+         // Priority: Fullscreen check
+         if (activeWindowFullscreen) {
+-            return (Config.dock?.availableOnFullscreen ?? false) && (Config.dock?.hoverToReveal && dockMouseArea.containsMouse);
++            return (Config.dock?.availableOnFullscreen ?? false) && (Config.dock?.hoverToReveal && root.mouseInside);
+         }
+ 
+         // If keepHidden is true, ONLY show on hover
+         // IMPORTANT: keepHidden overrides pinned and desktop mode
+         if (keepHidden) {
+-            return (Config.dock?.hoverToReveal && dockMouseArea.containsMouse);
++            return (Config.dock?.hoverToReveal && root.mouseInside);
+         }
+ 
+-        return root.pinned || (Config.dock?.hoverToReveal && dockMouseArea.containsMouse) || !hasWindows
++        // Visibility is driven ONLY by pin or genuine cursor hover. It is NOT
++        // tied to hasWindows: that value comes from AxctlService.clients, which
++        // can transiently go empty/stale whenever the `axctl subscribe` stream
++        // hiccups (reconnect/parse-error loop). The old `|| !hasWindows` term
++        // would then force the dock open and the watchdog (gated on hasWindows)
++        // couldn't hide it, leaving the dock stuck-visible until the stream
++        // recovered. Decoupling from hasWindows makes that failure impossible.
++        return root.pinned || (Config.dock?.hoverToReveal && root.mouseInside)
++    }
++
++    // --- Auto-hide hover state ----------------------------------------------
++    // Hover is tracked in our own flag (driven by the MouseArea's enter/move/
++    // exit signals) instead of reading containsMouse directly. The hover hitbox
++    // resizes with `reveal`, and an external condition (a window opening, a
++    // workspace or fullscreen change) can flip `reveal` while the pointer is
++    // stationary over the dock. Owning the flag lets us force it false on those
++    // transitions so a stale hover reading can't pin the dock open; genuine
++    // hover re-asserts via onEntered/onPositionChanged as soon as the pointer
++    // moves. The self-heal watchdog below is the hard guarantee against any
++    // residual stuck state.
++    property bool mouseInside: false
++
++    onHasWindowsChanged: mouseInside = false
++    onActiveWindowFullscreenChanged: mouseInside = false
++    onPinnedChanged: mouseInside = false
++
++    // --- Self-heal watchdog -------------------------------------------------
++    // Guarantee of last resort: whatever the trigger, the dock must never stay
++    // revealed while the pointer is genuinely away. This runs whenever the dock
++    // is revealed for a non-pinned, non-fullscreen reason (i.e. a hover) — the
++    // only state in which a stale hover flag could wrongly hold it open. It
++    // reads the real cursor position and drops the hover flag if the pointer
++    // isn't within this monitor's bottom band, so `reveal` recomputes to false
++    // within ~0.5s.
++    readonly property bool _watchdogActive: reveal && !pinned && !activeWindowFullscreen
++
++    Process {
++        id: _cursorProbe
++        command: ["axctl", "system", "get-cursor-position"]
++        stdout: StdioCollector {
++            onStreamFinished: {
++                let cx, cy;
++                try {
++                    const pos = JSON.parse(text);
++                    cx = pos.x;
++                    cy = pos.y;
++                } catch (e) {
++                    return;
++                }
++                if (typeof cx !== "number" || typeof cy !== "number" || isNaN(cx) || isNaN(cy))
++                    return;
++                // Generous bottom band so we never hide while genuinely hovering.
++                const band = root.dockSize + root.totalMargin + root.shadowSpace + 24;
++                const onThisMonitorX = cx >= root.screen.x && cx < root.screen.x + root.screen.width;
++                const inBottomBand = cy >= (root.screen.y + root.screen.height - band);
++                if (!(onThisMonitorX && inBottomBand))
++                    root.mouseInside = false;
++            }
++        }
++    }
++
++    Timer {
++        interval: 500
++        repeat: true
++        running: root._watchdogActive
++        onTriggered: _cursorProbe.running = true
+     }
+ 
+     readonly property int totalMargin: root.windowSideMargin + root.edgeSideMargin
+@@ -138,6 +206,14 @@ Item {
+         id: dockMouseArea
+         hoverEnabled: true
+ 
++        onEntered: root.mouseInside = true
++        // Any movement within the hitbox re-asserts hover. This also recovers
++        // the flag if it was force-cleared by a transition while the pointer was
++        // genuinely inside (onEntered alone wouldn't re-fire without a re-entry).
++        onPositionChanged: root.mouseInside = true
++        onExited: root.mouseInside = false
++        onCanceled: root.mouseInside = false
++
+         // Size
+         width: root.isVertical ? (root.reveal ? root.dockSize + root.totalMargin + root.shadowSpace : (Config.dock?.hoverRegionHeight ?? 4) + root.frameOffset) : dockContent.implicitWidth + 20
+         height: root.isVertical ? dockContent.implicitHeight + 20 : (root.reveal ? root.dockSize + root.totalMargin + root.shadowSpace : (Config.dock?.hoverRegionHeight ?? 4) + root.frameOffset)
+diff --git a/shell.qml b/shell.qml
+index 44a22dd5..e8d396ae 100644
+--- a/shell.qml
++++ b/shell.qml
+@@ -164,6 +164,10 @@ ShellRoot {
+         }
+     }
+ 
++    // HVA voice-dictation listening indicator (top pill layer surface,
++    // driven by the state file emitted by the hva service).
++    HvaIndicator {}
++
+     // Secure WlSessionLock lockscreen
+     WlSessionLock {
+         id: sessionLock
