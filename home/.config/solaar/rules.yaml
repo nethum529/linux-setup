@@ -1,0 +1,28 @@
+%YAML 1.3
+---
+- Rule:
+  - Feature: THUMB WHEEL
+  - Test: thumb_wheel_up
+  - Execute: [wpctl, set-volume, -l, '1.0', '@DEFAULT_AUDIO_SINK@', 1%+]
+...
+---
+- Rule:
+  - Feature: THUMB WHEEL
+  - Test: thumb_wheel_down
+  - Execute: [wpctl, set-volume, '@DEFAULT_AUDIO_SINK@', 1%-]
+...
+---
+- Rule:
+  - Key: [Forward Button, pressed]
+  - KeyPress: XF86_AudioNext
+...
+---
+- Rule:
+  - Key: [Haptic, pressed]
+  - KeyPress: [Super_L, g]
+...
+---
+- Rule:
+  - Key: [Back Button, pressed]
+  - KeyPress: [Super_L, w]
+...
