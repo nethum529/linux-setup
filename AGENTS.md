@@ -45,7 +45,7 @@ systemctl --user --failed                   # empty
 tailscale status                            # nodes listed, no health warnings
 usage                                       # prints rate-limit windows
 systemctl --user status hva agentdash       # both active (hva needs Handy installed)
-pgrep -a quickshell                         # Ambxst bar/dock running
+pgrep -af 'qs -p'                           # Ambxst shell (process is 'qs', not 'quickshell')
 hyprpm list | grep -A2 hyprexpo             # enabled: true  (Super+Tab)
 hyprctl binds | grep -c workspace           # dozens, not a handful
 herdr --help >/dev/null && echo herdr-ok
