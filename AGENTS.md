@@ -29,8 +29,9 @@ switching, empty bar. `parity/README.md` maps each symptom to its cause.
    - `sudo tailscale up` → open the printed link.
    - `npm install -g @anthropic-ai/claude-code`, then log in once (agentdash
      reads the credentials it writes).
-   - Download Handy from https://handy.computer to `~/Applications/Handy.AppImage`,
-     `chmod +x` it (autostart entry is already stowed).
+   - Handy is fully automated (parity layer downloads the AppImage, registers
+     app-search/autostart entries, seeds keybinds + vocabulary). Only launch it
+     once so it fetches its speech model (~600 MB, needs network).
 3. Reboot (or relog) once so GPU env, udev symlinks, and the DM take effect.
 4. Run `nwg-displays`, arrange the monitors, Apply.
 5. Different username than `nethum`? Fix the hard-coded paths first —

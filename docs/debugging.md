@@ -100,9 +100,20 @@ pgrep -f Handy                        # 2. Handy app running? (autostart .deskto
 hva serve --config ~/.config/handy-voice   # 3. foreground run, watch it hear you
 ```
 
-Common causes: Handy AppImage missing from `~/Applications` (manual install
-step), mic muted or wrong default source (`pactl list sources short`), venv
-broken after a python upgrade → re-run `~/handy-voice-activation/install.sh`.
+Common causes, in order:
+- Handy never installed → `./handy/install-handy.sh` (parity layer runs it;
+  also registers the app-search entry — if "Handy" doesn't appear in the
+  launcher, this script didn't run).
+- Speech model not downloaded yet: first transcription pulls ~600 MB into
+  `~/.cache/huggingface`; launch Handy once with network.
+- Mic muted or wrong default source (`pactl list sources short`). Device
+  selections are deliberately not seeded; Handy uses the machine default.
+- Keybind expectations: transcribe is **Left-Shift+Z** — Handy's own global
+  shortcut from the seeded settings, invisible to `hyprctl binds`. The wake
+  word "mars" only works while `hva.service` runs.
+- Listening indicator missing from the bar → parity overlay not applied
+  (HvaIndicator widget) or hva not publishing to `~/.local/state/hva/`.
+- venv broken after a python upgrade → re-run `~/handy-voice-activation/install.sh`.
 
 ## usage / agentdash errors
 
