@@ -112,7 +112,9 @@ Common causes, in order:
   shortcut from the seeded settings, invisible to `hyprctl binds`. The wake
   word "mars" only works while `hva.service` runs.
 - Listening indicator missing from the bar → parity overlay not applied
-  (HvaIndicator widget) or hva not publishing to `~/.local/state/hva/`.
+  (HvaIndicator widget), or the heartbeat file absent/stale:
+  `cat ~/.local/state/handy-voice/indicator.json` — hva rewrites it with a
+  fresh `ts` while listening; older than 4 s ⇒ the pill hides by design.
 - venv broken after a python upgrade → re-run `~/handy-voice-activation/install.sh`.
 
 ## usage / agentdash errors
