@@ -84,6 +84,12 @@ if [[ ! -f "$HOME/.cache/ambxst/wallpapers.json" ]]; then
 EOF
 fi
 
+# ------------------------------------------------------------------ handy
+# Speech-to-text app the wake-word daemon toggles; fully automated (AppImage
+# download, app-search + autostart entries, settings seed with keybind and
+# custom vocabulary). The hva daemon itself is installed by install.sh.
+../handy/install-handy.sh
+
 # ----------------------------------------------------------------- firefox
 # moz-mac userChrome theme + user.js (vertical tabs, dark, compact, clean
 # newtab). Needs a profile to exist; skips with a hint otherwise.
