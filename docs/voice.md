@@ -9,9 +9,12 @@ Three pieces, all installed automatically:
    `install.sh` from <https://github.com/nethum529/handy-voice-activation>
    (venv, `~/.local/bin/hva`, `hva.service`).
 3. **Listening indicator** — the `HvaIndicator` Ambxst bar widget (parity
-   overlay). hva publishes its FSM state to `$XDG_STATE_HOME/hva/` and the
-   widget shows while listening; Handy's own overlay is set to "none" on
-   purpose, so the bar widget is the only indicator.
+   overlay). hva publishes its FSM state atomically to
+   `$XDG_STATE_HOME/handy-voice/indicator.json` (`{listening, state, ts}`,
+   heartbeat, stale after 4 s) and the widget shows while listening; Handy's
+   own overlay is set to "none" on purpose, so the bar widget is the only
+   indicator. `install-handy.sh` seeds an IDLE copy so the widget parses
+   cleanly before the service's first start.
 
 ## The controls
 

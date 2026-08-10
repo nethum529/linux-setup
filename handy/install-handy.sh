@@ -53,6 +53,18 @@ else
     echo "==> Handy settings already exist; not overwriting"
 fi
 
+# ------------------------------------------------ indicator heartbeat seed --
+# The HvaIndicator bar widget watches $XDG_STATE_HOME/handy-voice/indicator.json
+# ({listening, state, ts}; heartbeat, stale after 4 s). The hva service owns and
+# rewrites this file at runtime; seeding an IDLE copy just guarantees the widget
+# has a well-formed file to parse before the service's first start.
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/handy-voice"
+if [[ ! -f "$STATE_DIR/indicator.json" ]]; then
+    echo "==> seeding indicator heartbeat file (IDLE)"
+    mkdir -p "$STATE_DIR"
+    cp indicator.json "$STATE_DIR/indicator.json"
+fi
+
 cat <<'EOF'
 
 Handy installed. Remaining reality checks:
