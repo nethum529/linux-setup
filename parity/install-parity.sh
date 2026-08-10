@@ -84,6 +84,11 @@ if [[ ! -f "$HOME/.cache/ambxst/wallpapers.json" ]]; then
 EOF
 fi
 
+# ----------------------------------------------------------------- firefox
+# moz-mac userChrome theme + user.js (vertical tabs, dark, compact, clean
+# newtab). Needs a profile to exist; skips with a hint otherwise.
+../firefox/install-firefox.sh || true
+
 # ------------------------------------------------------------ prebuilt tools
 echo "==> herdr, herdmates, teammux, hyprshell -> ~/.local/bin"
 install -m 0755 bin/* "$HOME/.local/bin/"
